@@ -12,7 +12,7 @@ You can view the live project here: [Stocktaking Report Generator](https://stock
 5) **State Management**: Local storage persistence, event management
 6) **UI**: Responsive design, drag-and-drop interfaces
 ## How to Install
-1) Visit the [Live Site](https://your-netlify-url.netlify.app)
+1) Visit the [Live Site](https://stocktakingreport.netlify.app)
 2) On desktop: Click the ➕ icon in address bar or "Install App"
 3) On mobile: Tap Chrome menu → "Add to Home Screen"
 4) Now the dashboard can be used when **offline** 
