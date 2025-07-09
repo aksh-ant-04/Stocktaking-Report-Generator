@@ -7,7 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'robots.txt'],
+      includeAssets: ['vite.svg', 'robots.txt'],
       manifest: {
         name: 'Stocktaking Dashboard',
         short_name: 'Dashboard',
@@ -20,14 +20,14 @@ export default defineConfig({
             src: 'icons/icon-192.png',
             sizes: '192x192',
             type: 'image/png',
-            purpose: 'any maskable',
+            purpose: 'any maskable'
           },
           {
             src: 'icons/icon-512.png',
             sizes: '512x512',
-            type: 'image/png',
-          },
-        ],
+            type: 'image/png'
+          }
+        ]
       },
       workbox: {
         runtimeCaching: [
@@ -35,19 +35,19 @@ export default defineConfig({
             urlPattern: ({ request }) => request.destination === 'document',
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'html-cache',
-            },
+              cacheName: 'html-cache'
+            }
           },
           {
             urlPattern: ({ request }) =>
-              ['style', 'script', 'worker'].includes(request.destination),
+              ['style', 'script', 'worker', 'image', 'font'].includes(request.destination),
             handler: 'StaleWhileRevalidate',
             options: {
-              cacheName: 'assets-cache',
-            },
-          },
-        ],
-      },
-    }),
-  ],
+              cacheName: 'asset-cache'
+            }
+          }
+        ]
+      }
+    })
+  ]
 });
