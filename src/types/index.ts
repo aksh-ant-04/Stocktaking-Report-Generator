@@ -42,6 +42,7 @@ export interface EventData {
   timeOfStockCount: string;
   acrebisSupervisor: string;
   customerSupervisor: string;
+  companyLogo?: string;
 }
 
 export interface LocationWiseReportItem {

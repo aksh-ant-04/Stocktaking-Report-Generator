@@ -54,7 +54,7 @@ const EventSelector: React.FC<EventSelectorProps> = ({
               <span className="font-medium">Selected Event:</span> {selectedEventId}
             </p>
             <p className="text-xs text-blue-600 mt-1">
-              Customer information loaded from saved data
+              Customer information and logo loaded from saved data
             </p>
           </div>
         )}

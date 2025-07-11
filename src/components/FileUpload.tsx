@@ -1,11 +1,12 @@
-import React, { useCallback } from 'react';
-import { Upload, FileText, Lock } from 'lucide-react';
+import React, { useCallback, useRef } from 'react';
+import { Upload, FileText, Lock, X } from 'lucide-react';
 
 interface FileUploadProps {
   title: string;
   description: string;
   requiredFields: string;
   onFileUpload: (file: File) => void;
+  onFileReset?: () => void; // Optional callback for reset
   uploadedFile?: File;
   color: 'blue' | 'green';
   disabled?: boolean;
@@ -16,14 +17,17 @@ const FileUpload: React.FC<FileUploadProps> = ({
   description,
   requiredFields,
   onFileUpload,
+  onFileReset,
   uploadedFile,
   color,
   disabled = false
 }) => {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
   const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     if (disabled) return;
-    
+
     const files = e.dataTransfer.files;
     if (files.length > 0) {
       onFileUpload(files[0]);
@@ -36,12 +40,21 @@ const FileUpload: React.FC<FileUploadProps> = ({
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (disabled) return;
-    
+
     const files = e.target.files;
     if (files && files.length > 0) {
       onFileUpload(files[0]);
     }
   }, [onFileUpload, disabled]);
+
+  const handleReset = () => {
+    if (inputRef.current) {
+      inputRef.current.value = ''; // clear file input value
+    }
+    if (onFileReset) {
+      onFileReset(); // let parent component clear the file state
+    }
+  };
 
   const colorClasses = {
     blue: disabled 
@@ -55,9 +68,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <div className="flex items-center space-x-2 mb-4">
-        <FileText className={`h-5 w-5 ${
-          disabled ? 'text-gray-400' : (color === 'blue' ? 'text-blue-600' : 'text-green-600')
-        }`} />
+        <FileText className={`h-5 w-5 ${disabled ? 'text-gray-400' : (color === 'blue' ? 'text-blue-600' : 'text-green-600')}`} />
         <h3 className={`text-lg font-semibold ${disabled ? 'text-gray-400' : 'text-gray-900'}`}>
           {title}
         </h3>
@@ -68,7 +79,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
           </div>
         )}
       </div>
-      
+
       {disabled && (
         <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-md">
           <p className="text-sm text-amber-800">
@@ -76,7 +87,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
           </p>
         </div>
       )}
-      
+
       <div
         className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${colorClasses[color]} ${
           disabled ? 'cursor-not-allowed' : 'cursor-pointer'
@@ -91,8 +102,9 @@ const FileUpload: React.FC<FileUploadProps> = ({
         <p className={`text-sm mb-4 ${disabled ? 'text-gray-400' : ''}`}>
           {disabled ? 'Enter Event ID first' : 'Or click to browse'}
         </p>
-        
+
         <input
+          ref={inputRef}
           type="file"
           accept=".xlsx,.xls"
           onChange={handleFileSelect}
@@ -110,14 +122,22 @@ const FileUpload: React.FC<FileUploadProps> = ({
         >
           Choose File
         </label>
-        
+
         {uploadedFile && (
-          <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md">
-            <p className="text-sm font-medium text-green-800">✓ Uploaded: {uploadedFile.name}</p>
+          <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md flex items-center justify-between">
+            <p className="text-sm font-medium text-green-800">
+              ✓ Uploaded: {uploadedFile.name}
+            </p>
+            <button
+              onClick={handleReset}
+              className="ml-4 text-red-600 hover:underline text-sm flex items-center"
+            >
+              <X className="h-4 w-4 mr-1" /> Reset
+            </button>
           </div>
         )}
       </div>
-      
+
       <p className={`text-sm mt-4 ${disabled ? 'text-gray-400' : 'text-gray-600'}`}>
         <strong>Required Fields:</strong> {requiredFields}
       </p>

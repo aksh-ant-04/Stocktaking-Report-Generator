@@ -12,7 +12,7 @@ const Header: React.FC = () => {
             <p className="text-sm text-gray-300">Report Generation Tool</p>
           </div>
         </div>
-        <div className="text-red-500 font-bold text-2xl" style={{ fontFamily: 'Calibri, sans-serif' }}>
+        <div className="text-red-500 font-bold text-4xl" style={{ fontFamily: 'Calibri, sans-serif' }}>
           acrebis
         </div>
       </div>

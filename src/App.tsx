@@ -83,12 +83,12 @@ function App() {
           timeOfStockCount: eventData.timeOfStockCount,
           acrebisSupervisor: eventData.acrebisSupervisor,
           customerSupervisor: eventData.customerSupervisor,
-          companyLogo: customerInfo.companyLogo // Preserve uploaded logo
+          companyLogo: eventData.companyLogo || '' // Load saved logo or empty string
         });
       }
     }
     // Don't reset customer info when deselecting - allow manual entry
-  }, [customerInfo.companyLogo]);
+  }, []);
 
   // Handle saving event
   const handleSaveEvent = useCallback(() => {
@@ -105,7 +105,8 @@ function App() {
       dateOfStockCount: customerInfo.dateOfStockCount,
       timeOfStockCount: customerInfo.timeOfStockCount,
       acrebisSupervisor: customerInfo.acrebisSupervisor,
-      customerSupervisor: customerInfo.customerSupervisor
+      customerSupervisor: customerInfo.customerSupervisor,
+      companyLogo: customerInfo.companyLogo
     };
 
     addEvent(eventData);
@@ -244,7 +245,7 @@ function App() {
       alert('Please generate the location wise report first.');
       return;
     }
-    exportLocationWiseToExcel(locationWiseReport);
+    exportLocationWiseToExcel(locationWiseReport, customerInfo);
   }, [locationWiseReport]);
 
   const handleExportConsolidatedPDF = useCallback(() => {
@@ -260,7 +261,7 @@ function App() {
       alert('Please generate the consolidated report first.');
       return;
     }
-    exportConsolidatedToExcel(consolidatedReport);
+    exportConsolidatedToExcel(consolidatedReport, customerInfo);
   }, [consolidatedReport]);
 
   const canGenerateReports = productMasterData.length > 0 && scanData.length > 0 && customerInfo.eventId.trim();
@@ -304,8 +305,12 @@ function App() {
               <FileUpload
                 title="PRODUCT ITEM MASTER"
                 description="Drag and Drop PRODUCT ITEM MASTER file"
-                requiredFields="Bu_Code, BU_ID, Inventory_Item_ID, Item_Description"
+                requiredFields="Pur_Ret_UPC, Inventory_Item_ID, Item_Description"
                 onFileUpload={handleProductMasterUpload}
+                onFileReset={() => {
+                  setProductMasterFile(undefined);
+                  setProductMasterData([]);
+                }}
                 uploadedFile={productMasterFile}
                 color="blue"
                 disabled={!hasEventId}
@@ -314,8 +319,12 @@ function App() {
               <FileUpload
                 title="SCAN DATA"
                 description="Drag and Drop SCAN DATA file"
-                requiredFields="Location, Item Barcode, Quantity, Sheet Name"
+                requiredFields="Location, Item Barcode, Quantity"
                 onFileUpload={handleScanDataUpload}
+                onFileReset={() => {
+                  setScanDataFile(undefined) //added for reset
+                  setScanData([]);
+                }} 
                 uploadedFile={scanDataFile}
                 color="green"
                 disabled={!hasEventId}
@@ -373,7 +382,7 @@ function App() {
                 <p className="text-2xl font-bold text-purple-600">{scanData.length}</p>
               </div>
               <div className="bg-orange-50 p-4 rounded-lg">
-                <p className="font-medium text-orange-900">Unique Locations</p>
+                <p className="font-medium text-orange-900">Total Completed Locations</p>
                 <p className="text-2xl font-bold text-orange-600">{locations.length}</p>
               </div>
             </div>

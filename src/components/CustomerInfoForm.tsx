@@ -208,6 +208,14 @@ const CustomerInfoForm: React.FC<CustomerInfoFormProps> = ({
             {customerInfo.companyLogo && (
               <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded-md">
                 <p className="text-sm text-green-800">✓ Logo uploaded successfully</p>
+                <div className="mt-2 flex items-center space-x-2">
+                  <img 
+                    src={customerInfo.companyLogo} 
+                    alt="Company Logo Preview" 
+                    className="h-8 w-8 object-contain border border-gray-200 rounded"
+                  />
+                  <span className="text-xs text-green-700">Preview</span>
+                </div>  
               </div>
             )}
           </div>
