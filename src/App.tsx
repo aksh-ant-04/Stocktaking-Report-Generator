@@ -67,6 +67,39 @@ function App() {
     consolidated: false
   });
 
+  //Reset Dashboard
+  const resetDashboard = () => {
+    setSelectedEventId('');
+    setCustomerInfo({
+      eventId: '',
+      customerName: '',
+      customerId: '',
+      outletAddress: '',
+      dateOfStockCount: '',
+      timeOfStockCount: '',
+      acrebisSupervisor: '',
+      customerSupervisor: '',
+      companyLogo: ''
+    });
+
+    setProductMasterFile(undefined);
+    setScanDataFile(undefined);
+    setProductMasterData([]);
+    setScanData([]);
+
+    setLocations([]);
+    setSelectedLocationWiseLocations([]);
+    setSelectedConsolidatedLocations([]);
+    setLocationWiseReport([]);
+    setConsolidatedReport([]);
+
+    setLoading({
+      productMaster: false,
+      scanData: false,
+      locationWise: false,
+      consolidated: false
+    });
+  };
   // Handle event selection
   const handleEventSelect = useCallback((eventId: string) => {
     setSelectedEventId(eventId);
@@ -275,6 +308,15 @@ function App() {
       <Header />
       
       <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        {/* 🔁 Refresh Button */}
+        <div className="mb-4 flex justify-end">
+          <button
+            onClick={resetDashboard}
+            className="bg-yellow-500 text-white font-semibold px-4 py-2 rounded hover:bg-yellow-600 shadow"
+          >
+            Reset Dashboard
+          </button>
+        </div>
         {/* Event Selection */}
         <EventSelector
           events={getAllEvents()}
