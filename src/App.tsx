@@ -41,6 +41,7 @@ function App() {
     outletAddress: '',
     dateOfStockCount: '',
     timeOfStockCount: '',
+    totalStocktakeLocations: '',
     acrebisSupervisor: '',
     customerSupervisor: '',
     companyLogo: ''
@@ -66,7 +67,6 @@ function App() {
     locationWise: false,
     consolidated: false
   });
-
   //Reset Dashboard
   const resetDashboard = () => {
     setSelectedEventId('');
@@ -77,6 +77,7 @@ function App() {
       outletAddress: '',
       dateOfStockCount: '',
       timeOfStockCount: '',
+      totalStocktakeLocations: '',
       acrebisSupervisor: '',
       customerSupervisor: '',
       companyLogo: ''
@@ -114,6 +115,7 @@ function App() {
           outletAddress: eventData.outletAddress,
           dateOfStockCount: eventData.dateOfStockCount,
           timeOfStockCount: eventData.timeOfStockCount,
+          totalStocktakeLocations: eventData.totalStocktakeLocations,
           acrebisSupervisor: eventData.acrebisSupervisor,
           customerSupervisor: eventData.customerSupervisor,
           companyLogo: eventData.companyLogo || '' // Load saved logo or empty string
@@ -137,6 +139,7 @@ function App() {
       outletAddress: customerInfo.outletAddress,
       dateOfStockCount: customerInfo.dateOfStockCount,
       timeOfStockCount: customerInfo.timeOfStockCount,
+      totalStocktakeLocations: customerInfo.totalStocktakeLocations,
       acrebisSupervisor: customerInfo.acrebisSupervisor,
       customerSupervisor: customerInfo.customerSupervisor,
       companyLogo: customerInfo.companyLogo
@@ -410,10 +413,10 @@ function App() {
         {(productMasterData.length > 0 || scanData.length > 0 || hasEventId) && (
           <div className="bg-white rounded-lg shadow-md p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Data Summary</h3>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-3 text-sm">
               <div className="bg-blue-50 p-4 rounded-lg">
                 <p className="font-medium text-blue-900">Current Event ID</p>
-                <p className="text-lg font-bold text-blue-600">{customerInfo.eventId || 'None'}</p>
+                <p className="text-xl font-bold text-blue-600 truncate">{customerInfo.eventId || 'None'}</p>
               </div>
               <div className="bg-green-50 p-4 rounded-lg">
                 <p className="font-medium text-green-900">Product Master Records</p>
@@ -422,6 +425,10 @@ function App() {
               <div className="bg-purple-50 p-4 rounded-lg">
                 <p className="font-medium text-purple-900">Scan Data Records</p>
                 <p className="text-2xl font-bold text-purple-600">{scanData.length}</p>
+              </div>
+	      <div className="bg-indigo-50 p-4 rounded-lg">
+                <p className="font-medium text-indigo-900">Total Stocktake Locations</p>
+                <p className="text-2xl font-bold text-indigo-600">{customerInfo.totalStocktakeLocations || '0'}</p>
               </div>
               <div className="bg-orange-50 p-4 rounded-lg">
                 <p className="font-medium text-orange-900">Total Completed Locations</p>

@@ -28,6 +28,7 @@ export interface CustomerInfo {
   outletAddress: string;
   dateOfStockCount: string;
   timeOfStockCount: string;
+  totalStocktakeLocations: string;
   acrebisSupervisor: string;
   customerSupervisor: string;
   companyLogo?: string;
@@ -40,6 +41,7 @@ export interface EventData {
   outletAddress: string;
   dateOfStockCount: string;
   timeOfStockCount: string;
+  totalStocktakeLocations: string;
   acrebisSupervisor: string;
   customerSupervisor: string;
   companyLogo?: string;

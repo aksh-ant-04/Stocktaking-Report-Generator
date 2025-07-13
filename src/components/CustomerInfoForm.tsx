@@ -41,7 +41,7 @@ const CustomerInfoForm: React.FC<CustomerInfoFormProps> = ({
 
   const handleClearAll = () => {
     if (totalSavedEvents === 0) return;
-    
+
     if (confirm(`Are you sure you want to delete all ${totalSavedEvents} saved events? This action cannot be undone.`)) {
       onClearAllEvents?.();
     }
@@ -59,7 +59,7 @@ const CustomerInfoForm: React.FC<CustomerInfoFormProps> = ({
             </span>
           )}
         </div>
-        
+
         <div className="flex space-x-2">
           {totalSavedEvents > 0 && (
             <button
@@ -71,7 +71,7 @@ const CustomerInfoForm: React.FC<CustomerInfoFormProps> = ({
               <span>Clear All</span>
             </button>
           )}
-          
+
           {canDeleteEvent && (
             <button
               onClick={onDeleteEvent}
@@ -81,7 +81,7 @@ const CustomerInfoForm: React.FC<CustomerInfoFormProps> = ({
               <span>Delete Event</span>
             </button>
           )}
-          
+
           <button
             onClick={onSaveEvent}
             disabled={!canSaveEvent}
@@ -92,14 +92,14 @@ const CustomerInfoForm: React.FC<CustomerInfoFormProps> = ({
           </button>
         </div>
       </div>
-      
+
       <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
         <p className="text-sm text-blue-800">
           <span className="font-medium">Instructions:</span> Enter Event ID and customer information below. 
-          Click "Save Event\" to add this event to the dropdown for future use. Events are automatically saved to your browser and will persist across sessions.
+          Click "Save Event" to add this event to the dropdown for future use. Events are automatically saved to your browser and will persist across sessions.
         </p>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Event ID *</label>
@@ -111,7 +111,7 @@ const CustomerInfoForm: React.FC<CustomerInfoFormProps> = ({
             placeholder="Enter Event ID (e.g., EVT001)"
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Customer Name *</label>
           <input
@@ -122,7 +122,7 @@ const CustomerInfoForm: React.FC<CustomerInfoFormProps> = ({
             placeholder="Enter customer name"
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Customer ID</label>
           <input
@@ -133,7 +133,7 @@ const CustomerInfoForm: React.FC<CustomerInfoFormProps> = ({
             placeholder="Enter customer ID"
           />
         </div>
-        
+
         <div className="md:col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-1">Outlet Address</label>
           <textarea
@@ -144,7 +144,7 @@ const CustomerInfoForm: React.FC<CustomerInfoFormProps> = ({
             placeholder="Enter outlet address"
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Date of Stock Count</label>
           <input
@@ -154,39 +154,55 @@ const CustomerInfoForm: React.FC<CustomerInfoFormProps> = ({
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Time of Stock Count</label>
-          <input
-            type="time"
-            value={customerInfo.timeOfStockCount}
-            onChange={(e) => handleInputChange('timeOfStockCount', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+
+        <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Time of Stock Count</label>
+            <input
+              type="time"
+              value={customerInfo.timeOfStockCount}
+              onChange={(e) => handleInputChange('timeOfStockCount', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Total Stocktake Locations</label>
+            <input
+              type="number"
+              min="0"
+              value={customerInfo.totalStocktakeLocations}
+              onChange={(e) => handleInputChange('totalStocktakeLocations', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter total locations"
+            />
+          </div>
         </div>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Name of ACREBIS Supervisor</label>
-          <input
-            type="text"
-            value={customerInfo.acrebisSupervisor}
-            onChange={(e) => handleInputChange('acrebisSupervisor', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter ACREBIS supervisor name"
-          />
+
+        <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Name of ACREBIS Supervisor</label>
+            <input
+              type="text"
+              value={customerInfo.acrebisSupervisor}
+              onChange={(e) => handleInputChange('acrebisSupervisor', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter ACREBIS supervisor name"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Name of Customer Supervisor</label>
+            <input
+              type="text"
+              value={customerInfo.customerSupervisor}
+              onChange={(e) => handleInputChange('customerSupervisor', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter customer supervisor name"
+            />
+          </div>
         </div>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Name of Customer Supervisor</label>
-          <input
-            type="text"
-            value={customerInfo.customerSupervisor}
-            onChange={(e) => handleInputChange('customerSupervisor', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter customer supervisor name"
-          />
-        </div>
-        
+
         <div className="md:col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-2">Company Logo</label>
           <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-gray-400 transition-colors">
@@ -215,7 +231,7 @@ const CustomerInfoForm: React.FC<CustomerInfoFormProps> = ({
                     className="h-8 w-8 object-contain border border-gray-200 rounded"
                   />
                   <span className="text-xs text-green-700">Preview</span>
-                </div>  
+                </div>
               </div>
             )}
           </div>
