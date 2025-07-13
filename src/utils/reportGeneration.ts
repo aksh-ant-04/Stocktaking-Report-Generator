@@ -107,10 +107,21 @@ export const generateLocationWiseReport = (
     );
     
     if (matchedProduct) {
+      // Add matched product with full details
       matchedData.push({
         Pur_Ret_UPC: matchedProduct.Pur_Ret_UPC,
         Inventory_Item_ID: matchedProduct.Inventory_Item_ID,
         Item_Description: matchedProduct.Item_Description,
+        Location: scan.Location,
+        Quantity: scan.Quantity,
+        Date: scan.Date
+      });
+    } else {
+      // Add unmatched item with "Barcode Not in Item Master" message
+      matchedData.push({
+        Pur_Ret_UPC: scan['Item Barcode'],
+        Inventory_Item_ID: '', // Empty for unmatched items
+        Item_Description: 'Barcode Not in Item Master',
         Location: scan.Location,
         Quantity: scan.Quantity,
         Date: scan.Date
