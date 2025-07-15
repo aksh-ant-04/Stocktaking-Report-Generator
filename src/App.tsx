@@ -413,7 +413,7 @@ function App() {
         {(productMasterData.length > 0 || scanData.length > 0 || hasEventId) && (
           <div className="bg-white rounded-lg shadow-md p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Data Summary</h3>
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-3 text-sm">
+            <div className="grid grid-cols-1 md:grid-cols-6 gap-3 text-sm">
               <div className="bg-blue-50 p-4 rounded-lg">
                 <p className="font-medium text-blue-900">Current Event ID</p>
                 <p className="text-xl font-bold text-blue-600 truncate">{customerInfo.eventId || 'None'}</p>
@@ -433,6 +433,10 @@ function App() {
               <div className="bg-orange-50 p-4 rounded-lg">
                 <p className="font-medium text-orange-900">Total Completed Locations</p>
                 <p className="text-2xl font-bold text-orange-600">{locations.length}</p>
+              </div>
+              <div className="bg-teal-50 p-4 rounded-lg">
+                <p className="font-medium text-teal-900">Total Quantity</p>
+                <p className="text-2xl font-bold text-teal-600">{scanData.reduce((total, item) => total + item.Quantity, 0)}</p>
               </div>
             </div>
           </div>
