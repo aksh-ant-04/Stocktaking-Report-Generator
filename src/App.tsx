@@ -98,6 +98,7 @@ function App() {
     setLocations([]);
     setSelectedLocationWiseLocations([]);
     setSelectedConsolidatedLocations([]);
+    setSelectedNOFLocations([]);
     setLocationWiseReport([]);
     setConsolidatedReport([]);
     setNOFReport([]);
@@ -284,7 +285,7 @@ function App() {
       const report = generateNOFReport(
         productMasterData,
         scanData,
-        [] // Pass empty array to include all locations
+        selectedNOFLocations
       );
       setNOFReport(report);
       console.log(`Generated NOF report with ${report.length} items`);
@@ -294,7 +295,7 @@ function App() {
     } finally {
       setLoading(prev => ({ ...prev, nof: false }));
     }
-  }, [productMasterData, scanData]);
+  }, [productMasterData, scanData, selectedNOFLocations]);
   // Export functions
   const handleExportLocationWisePDF = useCallback(() => {
     if (locationWiseReport.length === 0) {
@@ -454,9 +455,9 @@ function App() {
               title="NOF REPORT"
               description="Generate report of barcodes not found in Item Master file"
               icon={<FileBarChart className="h-5 w-5 text-red-600" />}
-              locations={[]}
-              selectedLocations={[]}
-              onLocationChange={() => {}}
+              locations={locations}
+              selectedLocations={selectedNOFLocations}
+              onLocationChange={setSelectedNOFLocations}
               onGenerateReport={handleGenerateNOFReport}
               onExportPDF={handleExportNOFPDF}
               onExportExcel={handleExportNOFExcel}
@@ -475,11 +476,11 @@ function App() {
                 <p className="text-xl font-bold text-blue-600 truncate">{customerInfo.eventId || 'None'}</p>
               </div>
               <div className="bg-indigo-50 p-4 rounded-lg">
-                <p className="font-medium text-indigo-900">Total Stocktake Locations</p>
+                <p className="font-medium text-indigo-900">Total Locations</p>
                 <p className="text-2xl font-bold text-indigo-600">{customerInfo.totalStocktakeLocations || '0'}</p>
               </div>
               <div className="bg-green-50 p-4 rounded-lg">
-                <p className="font-medium text-green-900">Product Master Records</p>
+                <p className="font-medium text-green-900">Item Master Records</p>
                 <p className="text-2xl font-bold text-green-600">{productMasterData.length}</p>
               </div>
               <div className="bg-purple-50 p-4 rounded-lg">
@@ -487,7 +488,7 @@ function App() {
                 <p className="text-2xl font-bold text-purple-600">{scanData.length}</p>
               </div>            
               <div className="bg-orange-50 p-4 rounded-lg">
-                <p className="font-medium text-orange-900">Total Completed Locations</p>
+                <p className="font-medium text-orange-900">Completed Locations</p>
                 <p className="text-2xl font-bold text-orange-600">{locations.length}</p>
               </div>
               <div className="bg-teal-50 p-4 rounded-lg">

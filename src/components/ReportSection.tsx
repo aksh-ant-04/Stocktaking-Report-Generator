@@ -123,7 +123,7 @@ const ReportSection: React.FC<ReportSectionProps> = ({
         <div className="flex space-x-2">
           <button
             onClick={onExportPDF}
-            disabled={!canGenerate || (locations.length > 0 && selectedLocations.length === 0)}
+            disabled={!canGenerate}
             className="flex-1 bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center space-x-2 text-sm transition-colors"
           >
             <Download className="h-4 w-4" />
@@ -132,7 +132,7 @@ const ReportSection: React.FC<ReportSectionProps> = ({
           
           <button
             onClick={onExportExcel}
-            disabled={!canGenerate || (locations.length > 0 && selectedLocations.length === 0)}
+            disabled={!canGenerate}
             className="flex-1 bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center space-x-2 text-sm transition-colors"
           >
             <Download className="h-4 w-4" />
