@@ -62,6 +62,13 @@ export interface ConsolidatedReportItem {
   Date: string;
 }
 
+export interface NOFReportItem {
+  Item_Barcode: string;
+  Location: string;
+  Quantity: number;
+  Date: string;
+}
+
 export interface LocationOption {
   value: string;
   label: string;

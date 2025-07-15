@@ -11,7 +11,8 @@ import {
   CustomerInfo, 
   LocationOption,
   LocationWiseReportItem,
-  ConsolidatedReportItem
+  ConsolidatedReportItem,
+  NOFReportItem
 } from './types';
 import { 
   processExcelFile, 
@@ -21,13 +22,16 @@ import {
 } from './utils/fileProcessing';
 import { 
   generateLocationWiseReport, 
-  generateConsolidatedReport 
+  generateConsolidatedReport,
+  generateNOFReport
 } from './utils/reportGeneration';
 import {
   exportLocationWiseToPDF,
   exportConsolidatedToPDF,
   exportLocationWiseToExcel,
-  exportConsolidatedToExcel
+  exportConsolidatedToExcel,
+  exportNOFToPDF,
+  exportNOFToExcel
 } from './utils/exportUtils';
 import { getAllEvents, getEventById, addEvent, removeEvent, clearAllEvents } from './utils/eventData';
 
@@ -57,15 +61,18 @@ function App() {
   const [locations, setLocations] = useState<LocationOption[]>([]);
   const [selectedLocationWiseLocations, setSelectedLocationWiseLocations] = useState<LocationOption[]>([]);
   const [selectedConsolidatedLocations, setSelectedConsolidatedLocations] = useState<LocationOption[]>([]);
+  const [selectedNOFLocations, setSelectedNOFLocations] = useState<LocationOption[]>([]);
   const [locationWiseReport, setLocationWiseReport] = useState<LocationWiseReportItem[]>([]);
   const [consolidatedReport, setConsolidatedReport] = useState<ConsolidatedReportItem[]>([]);
+  const [nofReport, setNOFReport] = useState<NOFReportItem[]>([]);
   
   // Loading states
   const [loading, setLoading] = useState({
     productMaster: false,
     scanData: false,
     locationWise: false,
-    consolidated: false
+    consolidated: false,
+    nof: false
   });
   //Reset Dashboard
   const resetDashboard = () => {
@@ -93,12 +100,14 @@ function App() {
     setSelectedConsolidatedLocations([]);
     setLocationWiseReport([]);
     setConsolidatedReport([]);
+    setNOFReport([]);
 
     setLoading({
       productMaster: false,
       scanData: false,
       locationWise: false,
-      consolidated: false
+      consolidated: false,
+      nof: false
     });
   };
   // Handle event selection
@@ -267,6 +276,25 @@ function App() {
     }
   }, [productMasterData, scanData, selectedConsolidatedLocations]);
 
+  // Generate NOF report
+  const handleGenerateNOFReport = useCallback(() => {
+    setLoading(prev => ({ ...prev, nof: true }));
+    
+    try {
+      const report = generateNOFReport(
+        productMasterData,
+        scanData,
+        [] // Pass empty array to include all locations
+      );
+      setNOFReport(report);
+      console.log(`Generated NOF report with ${report.length} items`);
+    } catch (error) {
+      console.error('Error generating NOF report:', error);
+      alert('Error generating NOF report.');
+    } finally {
+      setLoading(prev => ({ ...prev, nof: false }));
+    }
+  }, [productMasterData, scanData]);
   // Export functions
   const handleExportLocationWisePDF = useCallback(() => {
     if (locationWiseReport.length === 0) {
@@ -300,6 +328,21 @@ function App() {
     exportConsolidatedToExcel(consolidatedReport, customerInfo);
   }, [consolidatedReport]);
 
+  const handleExportNOFPDF = useCallback(() => {
+    if (nofReport.length === 0) {
+      alert('Please generate the NOF report first.');
+      return;
+    }
+    exportNOFToPDF(nofReport, customerInfo, customerInfo.companyLogo);
+  }, [nofReport, customerInfo]);
+
+  const handleExportNOFExcel = useCallback(() => {
+    if (nofReport.length === 0) {
+      alert('Please generate the NOF report first.');
+      return;
+    }
+    exportNOFToExcel(nofReport, customerInfo);
+  }, [nofReport]);
   const canGenerateReports = productMasterData.length > 0 && scanData.length > 0 && customerInfo.eventId.trim();
   const hasEventId = Boolean(customerInfo.eventId.trim());
   const canSaveEvent = Boolean(customerInfo.eventId.trim() && customerInfo.customerName.trim());
@@ -380,7 +423,7 @@ function App() {
 
         {/* Reports Section - Only shown when files are uploaded */}
         {canGenerateReports && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             <ReportSection
               title="LOCATION WISE REPORT"
               description="Generate a detailed report based on location sorted on basis of timestamp"
@@ -406,6 +449,19 @@ function App() {
               onExportExcel={handleExportConsolidatedExcel}
               canGenerate={canGenerateReports}
             />
+            
+            <ReportSection
+              title="NOF REPORT"
+              description="Generate report of barcodes not found in Item Master file"
+              icon={<FileBarChart className="h-5 w-5 text-red-600" />}
+              locations={[]}
+              selectedLocations={[]}
+              onLocationChange={() => {}}
+              onGenerateReport={handleGenerateNOFReport}
+              onExportPDF={handleExportNOFPDF}
+              onExportExcel={handleExportNOFExcel}
+              canGenerate={canGenerateReports}
+            />
           </div>
         )}
 
@@ -418,6 +474,10 @@ function App() {
                 <p className="font-medium text-blue-900">Current Event ID</p>
                 <p className="text-xl font-bold text-blue-600 truncate">{customerInfo.eventId || 'None'}</p>
               </div>
+              <div className="bg-indigo-50 p-4 rounded-lg">
+                <p className="font-medium text-indigo-900">Total Stocktake Locations</p>
+                <p className="text-2xl font-bold text-indigo-600">{customerInfo.totalStocktakeLocations || '0'}</p>
+              </div>
               <div className="bg-green-50 p-4 rounded-lg">
                 <p className="font-medium text-green-900">Product Master Records</p>
                 <p className="text-2xl font-bold text-green-600">{productMasterData.length}</p>
@@ -425,11 +485,7 @@ function App() {
               <div className="bg-purple-50 p-4 rounded-lg">
                 <p className="font-medium text-purple-900">Scan Data Records</p>
                 <p className="text-2xl font-bold text-purple-600">{scanData.length}</p>
-              </div>
-	      <div className="bg-indigo-50 p-4 rounded-lg">
-                <p className="font-medium text-indigo-900">Total Stocktake Locations</p>
-                <p className="text-2xl font-bold text-indigo-600">{customerInfo.totalStocktakeLocations || '0'}</p>
-              </div>
+              </div>            
               <div className="bg-orange-50 p-4 rounded-lg">
                 <p className="font-medium text-orange-900">Total Completed Locations</p>
                 <p className="text-2xl font-bold text-orange-600">{locations.length}</p>

@@ -3,6 +3,7 @@ import {
   ScanData,
   LocationWiseReportItem,
   ConsolidatedReportItem,
+  NOFReportItem,
   LocationOption
 } from '../types';
 
@@ -57,7 +58,6 @@ const parseTimestamp = (dateStr: string): number => {
       if (parts.length >= 3) {
         const firstNum = parseInt(parts[0]);
         const secondNum = parseInt(parts[1]);
-        
         if (firstNum > 12) {
           // Definitely DD/MM/YYYY
           normalizedDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}${parts.length > 3 ? ' ' + parts.slice(3).join(' ') : ''}`;
@@ -166,4 +166,48 @@ export const generateConsolidatedReport = (
     Quantity,
     Date: '' // Not needed for consolidated report
   }));
+};
+export const generateNOFReport = (
+  productMaster: ProductItemMaster[],
+  scanData: ScanData[],
+  selectedLocations: LocationOption[]
+): NOFReportItem[] => {
+  const locationValues = selectedLocations.map(loc => loc.value);
+  const filteredScanData = scanData.filter(scan =>
+    locationValues.length === 0 || locationValues.includes(scan.Location)
+  );
+
+  const nofData: NOFReportItem[] = [];
+  
+  filteredScanData.forEach(scan => {
+    const matchedProduct = productMaster.find(product =>
+      product.Pur_Ret_UPC === scan['Item Barcode']
+    );
+    
+    // Only include items that are NOT found in the product master
+    if (!matchedProduct) {
+      nofData.push({
+        Item_Barcode: scan['Item Barcode'],
+        Location: scan.Location,
+        Quantity: scan.Quantity,
+        Date: scan.Date
+      });
+    }
+  });
+
+  // Sort by location first, then by timestamp within each location (ascending order)
+  nofData.sort((a, b) => {
+    // First sort by location
+    if (a.Location !== b.Location) {
+      return a.Location.localeCompare(b.Location);
+    }
+    
+    // Then sort by timestamp within the same location (ascending order - earliest first)
+    const timestampA = parseTimestamp(a.Date);
+    const timestampB = parseTimestamp(b.Date);
+    
+    return timestampA - timestampB;
+  });
+
+  return nofData;
 };

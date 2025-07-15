@@ -2,7 +2,7 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import { LocationWiseReportItem, ConsolidatedReportItem, CustomerInfo } from '../types';
+import { LocationWiseReportItem, ConsolidatedReportItem, NOFReportItem, CustomerInfo } from '../types';
 
 const getFormattedTimestamp = () => {
   const now = new Date();
@@ -239,12 +239,11 @@ export const exportLocationWiseToExcel = (data: LocationWiseReportItem[], custom
     if (worksheet[quantityHeaderCell]) {
       worksheet[quantityHeaderCell].s = { alignment: { horizontal: 'center' } };
     }
-    
     // Set column widths for better formatting
     const colWidths = [
-      { wch: 15 }, // Pur_Ret_UPC
+      { wch: 15 }, // Pur_Ret_UPC - optimal for barcodes
       { wch: 20 }, // Inventory_Item_ID / Customer info labels
-      { wch: 40 }, // Item_Description / Customer info values
+      { wch: 50 }, // Item_Description / Customer info values - increased for longer descriptions
       { wch: 15 }, // Location / Customer info labels
       { wch: 10 }  // Quantity / Customer info values
     ];
@@ -268,6 +267,149 @@ export const exportLocationWiseToExcel = (data: LocationWiseReportItem[], custom
   }
 };
 
+export const exportNOFToPDF = (data: NOFReportItem[], customerInfo: CustomerInfo, companyLogo?: string) => {
+  const doc = new jsPDF();
+  const reportTitle = 'NOF REPORT';
+  const finalData: any[] = [];
+  const locations = [...new Set(data.map(d => d.Location))];
+
+  locations.forEach(location => {
+    const locationRows = data.filter(d => d.Location === location);
+    finalData.push([{
+      content: `Location: ${location}`,
+      colSpan: 3,
+      styles: { fontStyle: 'bold', fillColor: [200, 200, 255] }
+    }]);
+
+    locationRows.forEach(item => {
+      finalData.push([
+        item.Item_Barcode,
+        item.Location,
+        item.Quantity.toString()
+      ]);
+    });
+
+    const subtotal = locationRows.reduce((sum, item) => sum + item.Quantity, 0);
+    finalData.push([{
+      content: `Subtotal for ${location}: ${subtotal}`,
+      colSpan: 3,
+      styles: { fontStyle: 'bold', fillColor: [220, 220, 220], halign: 'center'}
+    }]);
+  });
+
+  const grandTotal = data.reduce((sum, d) => sum + d.Quantity, 0);
+  finalData.push([{
+    content: `Grand Total: ${grandTotal}`,
+    colSpan: 3,
+    styles: { fontStyle: 'bold', fillColor: [180, 255, 180], halign: 'center'}
+  }]);
+
+  doc.autoTable({
+    startY: 58,
+    head: [['Item_Barcode', 'Location', 'Quantity']],
+    body: finalData,
+    theme: 'grid',
+    headStyles: { fillColor: [0, 0, 0], textColor: [255, 255, 255], 2: { halign: 'center' } },
+    styles: { fontSize: 8 },
+    columnStyles: {
+      2: { halign: 'center' } // Center align Quantity column
+    },
+    margin: { top: 58 },
+    didParseCell: function (data) {
+      // Target only the "Quantity" header cell
+      if (data.section === 'head' && data.column.index === 2) {
+        data.cell.styles.halign = 'center';
+      }
+    },
+    didDrawPage: function (data) {
+      // Add header to every page
+      addHeaderToPage(doc, reportTitle, companyLogo);
+      // Add customer info table to every page  
+      renderCustomerInfoTable(doc, customerInfo, 28);
+
+      const pageNumber = doc.internal.getCurrentPageInfo().pageNumber;
+      const pageCount = doc.internal.getNumberOfPages();
+      const ts = getFormattedTimestamp();
+      doc.setFontSize(8);
+      doc.setTextColor(100);
+      doc.text(`Generated: ${ts} | Page ${pageNumber}`, 15, doc.internal.pageSize.height - 10);
+    }
+  });
+
+  doc.save('nof-report.pdf');
+};
+
+export const exportNOFToExcel = (data: NOFReportItem[], customerInfo: CustomerInfo) => {
+  try {
+    // Create workbook
+    const workbook = XLSX.utils.book_new();
+    
+    // Prepare customer information data
+    const customerData = [
+      ['Customer Information', '', ''],
+      ['Customer Name', customerInfo.customerName || '', 'Date of Stock Take', customerInfo.dateOfStockCount || ''],
+      ['Customer ID', customerInfo.customerId || '', 'Time of Stock Take', customerInfo.timeOfStockCount || ''],
+      ['Outlet Address', customerInfo.outletAddress || '', ''],
+      ['ACREBIS Supervisor', customerInfo.acrebisSupervisor || '', 'Customer Supervisor', customerInfo.customerSupervisor || ''],
+      ['', '', ''], // Empty row for spacing
+      ['NOF Report', '', ''],
+      ['', '', ''], // Empty row for spacing
+    ];
+    
+    // Prepare report data without Date column
+    const reportData = data.map(item => ({
+      'Item_Barcode': item.Item_Barcode,
+      'Location': item.Location,
+      'Quantity': item.Quantity
+    }));
+    
+    // Create worksheet with customer info first
+    const worksheet = XLSX.utils.aoa_to_sheet(customerData);
+    
+    // Add report data starting from row after customer info
+    XLSX.utils.sheet_add_json(worksheet, reportData, { 
+      origin: `A${customerData.length + 1}`,
+      skipHeader: false 
+    });
+    
+    // Center align the Quantity column in Excel
+    const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+    for (let row = customerData.length + 1; row <= range.e.r; row++) {
+      const cellAddress = XLSX.utils.encode_cell({ r: row, c: 2 }); // Column C (Quantity)
+      if (worksheet[cellAddress]) {
+        worksheet[cellAddress].s = { alignment: { horizontal: 'center' } };
+      }
+    }
+    const quantityHeaderCell = XLSX.utils.encode_cell({ r: customerData.length, c: 2 }); // C header row
+    if (worksheet[quantityHeaderCell]) {
+      worksheet[quantityHeaderCell].s = { alignment: { horizontal: 'center' } };
+    }
+    
+    // Set column widths for better formatting
+    const colWidths = [
+      { wch: 15 }, // Item_Barcode
+      { wch: 15 }, // Location
+      { wch: 10 }  // Quantity
+    ];
+    worksheet['!cols'] = colWidths;
+    
+    // Add worksheet to workbook
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'NOF Report');
+    
+    // Generate Excel file buffer
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    
+    // Create blob and save file
+    const blob = new Blob([excelBuffer], { 
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' 
+    });
+    
+    saveAs(blob, `nof-report-${new Date().toISOString().split('T')[0]}.xlsx`);
+  } catch (error) {
+    console.error('Error exporting to Excel:', error);
+    alert('Error exporting to Excel. Please try again.');
+  }
+};
 export const exportConsolidatedToExcel = (data: ConsolidatedReportItem[], customerInfo: CustomerInfo) => {
   try {
     // Create workbook

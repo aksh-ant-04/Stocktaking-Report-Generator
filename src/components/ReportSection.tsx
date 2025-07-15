@@ -45,7 +45,8 @@ const ReportSection: React.FC<ReportSectionProps> = ({
       
       <p className="text-gray-600 mb-4">{description}</p>
       
-      <div className="mb-4">
+      {locations.length > 0 && (
+        <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
           <label className="block text-sm font-medium text-gray-700">Select Locations</label>
           <div className="flex space-x-2">
@@ -106,7 +107,8 @@ const ReportSection: React.FC<ReportSectionProps> = ({
             {selectedLocations.length} of {locations.length} locations selected
           </p>
         )}
-      </div>
+        </div>
+      )}
       
       <div className="flex flex-col space-y-2">
         <button
@@ -121,7 +123,7 @@ const ReportSection: React.FC<ReportSectionProps> = ({
         <div className="flex space-x-2">
           <button
             onClick={onExportPDF}
-            disabled={!canGenerate || selectedLocations.length === 0}
+            disabled={!canGenerate || (locations.length > 0 && selectedLocations.length === 0)}
             className="flex-1 bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center space-x-2 text-sm transition-colors"
           >
             <Download className="h-4 w-4" />
@@ -130,7 +132,7 @@ const ReportSection: React.FC<ReportSectionProps> = ({
           
           <button
             onClick={onExportExcel}
-            disabled={!canGenerate || selectedLocations.length === 0}
+            disabled={!canGenerate || (locations.length > 0 && selectedLocations.length === 0)}
             className="flex-1 bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center space-x-2 text-sm transition-colors"
           >
             <Download className="h-4 w-4" />
