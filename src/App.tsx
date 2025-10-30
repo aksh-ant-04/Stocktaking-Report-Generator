@@ -344,7 +344,7 @@ function App() {
     }
     exportNOFToExcel(nofReport, customerInfo);
   }, [nofReport]);
-  const canGenerateReports = productMasterData.length > 0 && scanData.length > 0 && customerInfo.eventId.trim();
+  const canGenerateReports = productMasterData.length > 0 && scanData.length > 0 && !!customerInfo.eventId.trim();
   const hasEventId = Boolean(customerInfo.eventId.trim());
   const canSaveEvent = Boolean(customerInfo.eventId.trim() && customerInfo.customerName.trim());
   const canDeleteEvent = Boolean(selectedEventId && getAllEvents().some(e => e.eventId === selectedEventId));
@@ -413,6 +413,7 @@ function App() {
                 onFileReset={() => {
                   setScanDataFile(undefined) //added for reset
                   setScanData([]);
+                  setLocations([]);
                 }} 
                 uploadedFile={scanDataFile}
                 color="green"
