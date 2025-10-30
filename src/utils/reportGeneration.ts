@@ -227,8 +227,13 @@ export const generateBarcodeWiseReport = (
   // Map to final records by looking up item master details
   const results: BarcodeWiseReportItem[] = Object.entries(barcodeToQuantity).map(([barcode, qty]) => {
     const matchedProduct = productMaster.find((p) => p.Pur_Ret_UPC === barcode);
+    const normalized = (barcode || '').trim();
+    const digitsOnly = normalized.replace(/\D/g, '');
+    const formattedUPC = digitsOnly.length > 0
+      ? (digitsOnly.length < 13 ? digitsOnly.padStart(13, '0') : digitsOnly)
+      : normalized;
     return {
-      Pur_Ret_UPC: barcode,
+      Pur_Ret_UPC: formattedUPC,
       Inventory_Item_ID: matchedProduct ? matchedProduct.Inventory_Item_ID : '',
       Item_Description: matchedProduct ? matchedProduct.Item_Description : 'Barcode Not in Item Master',
       Quantity: qty
