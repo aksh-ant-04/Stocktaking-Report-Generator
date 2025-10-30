@@ -122,6 +122,7 @@ export const exportLocationWiseToPDF = (data: LocationWiseReportItem[], customer
     headStyles: { fillColor: [0, 0, 0], textColor: [255, 255, 255], 4: { halign: 'center' } },
     styles: { fontSize: 8 },
     columnStyles: {
+      0: { cellWidth: 28 },
       4: { halign: 'center' } // Center align Quantity column
     },
     margin: { top: 58 },
