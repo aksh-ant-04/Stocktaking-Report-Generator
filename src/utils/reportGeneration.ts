@@ -4,7 +4,8 @@ import {
   LocationWiseReportItem,
   ConsolidatedReportItem,
   NOFReportItem,
-  LocationOption
+  LocationOption,
+  BarcodeWiseReportItem
 } from '../types';
 
 // Enhanced date parsing function to handle multiple timestamp formats
@@ -210,4 +211,31 @@ export const generateNOFReport = (
   });
 
   return nofData;
+};
+
+export const generateBarcodeWiseReport = (
+  productMaster: ProductItemMaster[],
+  scanData: ScanData[]
+): BarcodeWiseReportItem[] => {
+  // Aggregate quantities by barcode across all locations
+  const barcodeToQuantity: Record<string, number> = {};
+  scanData.forEach((scan) => {
+    const barcode = scan['Item Barcode'];
+    barcodeToQuantity[barcode] = (barcodeToQuantity[barcode] || 0) + scan.Quantity;
+  });
+
+  // Map to final records by looking up item master details
+  const results: BarcodeWiseReportItem[] = Object.entries(barcodeToQuantity).map(([barcode, qty]) => {
+    const matchedProduct = productMaster.find((p) => p.Pur_Ret_UPC === barcode);
+    return {
+      Pur_Ret_UPC: barcode,
+      Inventory_Item_ID: matchedProduct ? matchedProduct.Inventory_Item_ID : '',
+      Item_Description: matchedProduct ? matchedProduct.Item_Description : 'Barcode Not in Item Master',
+      Quantity: qty
+    };
+  });
+
+  // Sort by barcode for consistency
+  results.sort((a, b) => a.Pur_Ret_UPC.localeCompare(b.Pur_Ret_UPC));
+  return results;
 };

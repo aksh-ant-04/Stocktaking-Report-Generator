@@ -12,7 +12,8 @@ import {
   LocationOption,
   LocationWiseReportItem,
   ConsolidatedReportItem,
-  NOFReportItem
+  NOFReportItem,
+  BarcodeWiseReportItem
 } from './types';
 import { 
   processExcelFile, 
@@ -23,7 +24,8 @@ import {
 import { 
   generateLocationWiseReport, 
   generateConsolidatedReport,
-  generateNOFReport
+  generateNOFReport,
+  generateBarcodeWiseReport
 } from './utils/reportGeneration';
 import {
   exportLocationWiseToPDF,
@@ -31,7 +33,9 @@ import {
   exportLocationWiseToExcel,
   exportConsolidatedToExcel,
   exportNOFToPDF,
-  exportNOFToExcel
+  exportNOFToExcel,
+  exportBarcodeWiseToPDF,
+  exportBarcodeWiseToExcel
 } from './utils/exportUtils';
 import { getAllEvents, getEventById, addEvent, removeEvent, clearAllEvents } from './utils/eventData';
 
@@ -65,6 +69,7 @@ function App() {
   const [locationWiseReport, setLocationWiseReport] = useState<LocationWiseReportItem[]>([]);
   const [consolidatedReport, setConsolidatedReport] = useState<ConsolidatedReportItem[]>([]);
   const [nofReport, setNOFReport] = useState<NOFReportItem[]>([]);
+  const [barcodeWiseReport, setBarcodeWiseReport] = useState<BarcodeWiseReportItem[]>([]);
   
   // Loading states
   const [loading, setLoading] = useState({
@@ -102,6 +107,7 @@ function App() {
     setLocationWiseReport([]);
     setConsolidatedReport([]);
     setNOFReport([]);
+    setBarcodeWiseReport([]);
 
     setLoading({
       productMaster: false,
@@ -296,6 +302,24 @@ function App() {
       setLoading(prev => ({ ...prev, nof: false }));
     }
   }, [productMasterData, scanData, selectedNOFLocations]);
+
+  // Generate barcode wise report
+  const handleGenerateBarcodeWiseReport = useCallback(() => {
+    setLoading(prev => ({ ...prev, locationWise: true }));
+    try {
+      const report = generateBarcodeWiseReport(
+        productMasterData,
+        scanData
+      );
+      setBarcodeWiseReport(report);
+      console.log(`Generated barcode wise report with ${report.length} items`);
+    } catch (error) {
+      console.error('Error generating barcode wise report:', error);
+      alert('Error generating barcode wise report.');
+    } finally {
+      setLoading(prev => ({ ...prev, locationWise: false }));
+    }
+  }, [productMasterData, scanData]);
   // Export functions
   const handleExportLocationWisePDF = useCallback(() => {
     if (locationWiseReport.length === 0) {
@@ -344,6 +368,22 @@ function App() {
     }
     exportNOFToExcel(nofReport, customerInfo);
   }, [nofReport]);
+
+  const handleExportBarcodeWisePDF = useCallback(() => {
+    if (barcodeWiseReport.length === 0) {
+      alert('Please generate the barcode wise report first.');
+      return;
+    }
+    exportBarcodeWiseToPDF(barcodeWiseReport, customerInfo, customerInfo.companyLogo);
+  }, [barcodeWiseReport, customerInfo]);
+
+  const handleExportBarcodeWiseExcel = useCallback(() => {
+    if (barcodeWiseReport.length === 0) {
+      alert('Please generate the barcode wise report first.');
+      return;
+    }
+    exportBarcodeWiseToExcel(barcodeWiseReport, customerInfo);
+  }, [barcodeWiseReport, customerInfo]);
   const canGenerateReports = productMasterData.length > 0 && scanData.length > 0 && !!customerInfo.eventId.trim();
   const hasEventId = Boolean(customerInfo.eventId.trim());
   const canSaveEvent = Boolean(customerInfo.eventId.trim() && customerInfo.customerName.trim());
@@ -425,7 +465,7 @@ function App() {
 
         {/* Reports Section - Only shown when files are uploaded */}
         {canGenerateReports && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
             <ReportSection
               title="LOCATION WISE REPORT"
               description="Generate a detailed report based on location sorted on basis of timestamp"
@@ -462,6 +502,18 @@ function App() {
               onGenerateReport={handleGenerateNOFReport}
               onExportPDF={handleExportNOFPDF}
               onExportExcel={handleExportNOFExcel}
+              canGenerate={canGenerateReports}
+            />
+            <ReportSection
+              title="BARCODE WISE REPORT"
+              description="Total quantity per item barcode across all locations"
+              icon={<FileBarChart className="h-5 w-5 text-gray-600" />}
+              locations={[]}
+              selectedLocations={[]}
+              onLocationChange={() => {}}
+              onGenerateReport={handleGenerateBarcodeWiseReport}
+              onExportPDF={handleExportBarcodeWisePDF}
+              onExportExcel={handleExportBarcodeWiseExcel}
               canGenerate={canGenerateReports}
             />
           </div>

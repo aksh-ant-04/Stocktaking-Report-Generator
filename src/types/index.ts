@@ -69,6 +69,13 @@ export interface NOFReportItem {
   Date: string;
 }
 
+export interface BarcodeWiseReportItem {
+  Pur_Ret_UPC: string;
+  Inventory_Item_ID: string;
+  Item_Description: string;
+  Quantity: number;
+}
+
 export interface LocationOption {
   value: string;
   label: string;

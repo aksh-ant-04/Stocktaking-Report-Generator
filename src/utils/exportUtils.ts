@@ -2,7 +2,7 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import { LocationWiseReportItem, ConsolidatedReportItem, NOFReportItem, CustomerInfo } from '../types';
+import { LocationWiseReportItem, ConsolidatedReportItem, NOFReportItem, CustomerInfo, BarcodeWiseReportItem } from '../types';
 
 const getFormattedTimestamp = () => {
   const now = new Date();
@@ -406,6 +406,109 @@ export const exportNOFToExcel = (data: NOFReportItem[], customerInfo: CustomerIn
     });
     
     saveAs(blob, `nof-report-${new Date().toISOString().split('T')[0]}.xlsx`);
+  } catch (error) {
+    console.error('Error exporting to Excel:', error);
+    alert('Error exporting to Excel. Please try again.');
+  }
+};
+
+export const exportBarcodeWiseToPDF = (data: BarcodeWiseReportItem[], customerInfo: CustomerInfo, companyLogo?: string) => {
+  const doc = new jsPDF();
+  const reportTitle = 'BARCODE WISE REPORT';
+
+  const tableData: any[] = data.map(d => [
+    d.Pur_Ret_UPC,
+    d.Inventory_Item_ID,
+    d.Item_Description,
+    d.Quantity.toString()
+  ]);
+
+  const grandTotal = data.reduce((sum, d) => sum + d.Quantity, 0);
+  tableData.push([
+    { content: `Grand Total: ${grandTotal}`, colSpan: 4, styles: { fontStyle: 'bold', fillColor: [180, 255, 180], halign: 'center'} }
+  ]);
+
+  doc.autoTable({
+    startY: 58,
+    head: [['Pur_Ret_UPC', 'Inventory_Item_ID', 'Item_Description', 'Quantity']],
+    body: tableData,
+    theme: 'grid',
+    headStyles: { fillColor: [0, 0, 0], textColor: [255, 255, 255], 3: { halign: 'center' } },
+    styles: { fontSize: 8 },
+    columnStyles: {
+      0: { cellWidth: 28 },
+      3: { halign: 'center' }
+    },
+    margin: { top: 58 },
+    didParseCell: function (data) {
+      if (data.section === 'head' && data.column.index === 3) {
+        data.cell.styles.halign = 'center';
+      }
+    },
+    didDrawPage: function () {
+      addHeaderToPage(doc, reportTitle, companyLogo);
+      renderCustomerInfoTable(doc, customerInfo, 28);
+
+      const pageNumber = doc.internal.getCurrentPageInfo().pageNumber;
+      const ts = getFormattedTimestamp();
+      doc.setFontSize(8);
+      doc.setTextColor(100);
+      doc.text(`Generated: ${ts} | Page ${pageNumber}`, 15, doc.internal.pageSize.height - 10);
+    }
+  });
+
+  doc.save('barcode-wise-report.pdf');
+};
+
+export const exportBarcodeWiseToExcel = (data: BarcodeWiseReportItem[], customerInfo: CustomerInfo) => {
+  try {
+    const workbook = XLSX.utils.book_new();
+
+    const customerData = [
+      ['Customer Information', '', '', ''],
+      ['Customer Name', customerInfo.customerName || '', 'Date of Stock Take', customerInfo.dateOfStockCount || ''],
+      ['Customer ID', customerInfo.customerId || '', 'Time of Stock Take', customerInfo.timeOfStockCount || ''],
+      ['Outlet Address', customerInfo.outletAddress || '', '', ''],
+      ['ACREBIS Supervisor', customerInfo.acrebisSupervisor || '', 'Customer Supervisor', customerInfo.customerSupervisor || ''],
+      ['', '', '', ''],
+      ['Barcode Wise Report', '', '', ''],
+      ['', '', '', '']
+    ];
+
+    const reportData = data.map(item => ({
+      'Pur_Ret_UPC': item.Pur_Ret_UPC,
+      'Inventory_Item_ID': item.Inventory_Item_ID,
+      'Item_Description': item.Item_Description,
+      'Quantity': item.Quantity
+    }));
+
+    const worksheet = XLSX.utils.aoa_to_sheet(customerData);
+    XLSX.utils.sheet_add_json(worksheet, reportData, {
+      origin: `A${customerData.length + 1}`,
+      skipHeader: false
+    });
+
+    const colWidths = [
+      { wch: 15 },
+      { wch: 20 },
+      { wch: 50 },
+      { wch: 10 }
+    ];
+    worksheet['!cols'] = colWidths;
+
+    // Center align Quantity column including header
+    const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+    for (let row = customerData.length; row <= range.e.r; row++) {
+      const addr = XLSX.utils.encode_cell({ r: row, c: 3 });
+      if (worksheet[addr]) {
+        worksheet[addr].s = { alignment: { horizontal: 'center' } } as any;
+      }
+    }
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Barcode Wise Report');
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
+    saveAs(blob, `barcode-wise-report-${new Date().toISOString().split('T')[0]}.xlsx`);
   } catch (error) {
     console.error('Error exporting to Excel:', error);
     alert('Error exporting to Excel. Please try again.');
